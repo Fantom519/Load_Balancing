@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend1:
+    build: ./backend
+    container_name: backend1
+    environment:
+      - NODE_NAME=Node_1
+    networks:
+      - backend-net
+
+  backend2:
+    build: ./backend
+    container_name: backend2
+    environment:
+      - NODE_NAME=Node_2
+    networks:
+      - backend-net
+
+  backend3:
+    build: ./backend
+    container_name: backend3
+    environment:
+      - NODE_NAME=Node_3
+    networks:
+      - backend-net
+
+  haproxy:
+    image: haproxy:2.4
+    container_name: haproxy_lb
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "8080:80"
+      - "8404:8404"
+    networks:
+      - frontend-net
+      - backend-net
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+
+# Khai báo phân vùng mạng nội bộ
+networks:
+  frontend-net:
+    driver: bridge
+  backend-net:
+    driver: bridge
