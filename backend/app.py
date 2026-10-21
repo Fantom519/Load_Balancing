@@ -1,32 +1,33 @@
-from flask import Flask
-import os
+from flask import Flask, jsonify
 import time
 import random
+import os
 
 app = Flask(__name__)
 
-# Lấy tên node từ biến môi trường Docker
-node_name = os.environ.get("NODE_NAME", "Unknown_Node")
+# Lấy ID của server từ biến môi trường
+SERVER_ID = os.getenv("SERVER_ID", "Node_Unknown")
 
-@app.route('/ping')
+@app.route('/ping', methods=['GET'])
 def ping():
-    # Endpoint nhẹ: Xử lý tức thì (dùng test Round Robin / Weighted)
-    return {
-        "status": "success",
-        "node": node_name,
-        "message": f"Hello from {node_name}"
-    }
+    """Endpoint phản hồi tức thì để test Round Robin và Weighted."""
+    return jsonify({
+        "server": SERVER_ID, 
+        "status": "success", 
+        "message": "Pong!"
+    })
 
-@app.route('/heavy')
-def heavy():
-    # Endpoint nặng: Giả lập thời gian xử lý ngẫu nhiên từ 0.5s - 1.5s (dùng test Least Connections)
+@app.route('/heavy', methods=['GET'])
+def heavy_task():
+    """Endpoint giả lập tính toán nặng để ép tải Least Connections."""
     delay = random.uniform(0.5, 1.5)
     time.sleep(delay)
-    return {
-        "status": "success",
-        "node": node_name,
-        "delay_sec": round(delay, 2)
-    }
+    return jsonify({
+        "server": SERVER_ID, 
+        "status": "success", 
+        "delay_seconds": round(delay, 2),
+        "message": "Heavy task completed"
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
